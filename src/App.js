@@ -1,6 +1,5 @@
 import React from 'react';
 import { Component } from 'react';
-import logo from './logo.svg';
 import axios from 'axios';
 import './App.css';
 
@@ -14,11 +13,28 @@ class App extends Component {
       .get('/posts', {withCredentials:true})
       .then( (response) => {
         if(response.data instanceof Array)
-          this.setState({posts: response.data})
+          this.setState({posts: response.data});
         else
           window.location = '/login.html'
       })
   }
+  getLikeText(likeList) {
+    var text = ""
+    if(likeList.length === 0) {
+      return "No one likes this. Sad.";
+    }
+    if(likeList.length === 1) {
+      return `${likeList[0]} likes this.`;
+    }
+    if(likeList.length === 2) {
+      return `${likeList[0]} and ${likeList[1]} like this.`;
+    }
+    if(likeList.length === 3) {
+      return `${likeList[0]}, ${likeList[1]} and ${likeList[2]} like this.`;
+    }
+    return `${likeList[0]}, ${likeList[1]} and ${likeList.length - 2} more like this.`;
+  }
+
   render() {
     return (
       <div className="App">
@@ -29,13 +45,17 @@ class App extends Component {
                 <div>{post.content}</div>
                 <div>{post.poster}</div>
                 <div>{`posted at: ${post.date}`}</div>
+                <div>{this.getLikeText(comment.likes)}</div>
+                <button onClick={()=>axios.post('/toggleLike', {_id: post._id})}>{'Like or Unlike'}</button>
                 <div>{'Comments'}</div>
                 {post.comments.map((comment)=>{
                   return (
                     <div>
                       <div>{comment.content}</div>
                       <div>{comment.poster}</div>
-                      <div>{`posted at: ${post.date}`}</div>
+                      <div>{`posted at: ${comment.date}`}</div>
+                      <div>{this.getLikeText(comment.likes)}</div>
+                      <button onClick={()=>axios.post('/toggleLike', {_id: post._id, commentId: comment._id})}>{'Like or Unlike'}</button>
                     </div>
                   )
                 })}

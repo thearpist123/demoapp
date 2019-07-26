@@ -19,12 +19,12 @@ mongoose
     
 const Thread = new mongoose.Schema({
     content: String,
-    likes: Number,
+    likes: [String],
     date: Date,
     poster: String,
     comments: [{
         content: String,
-        likes: Number,
+        likes: [String],
         date: Date,
         poster: String,
         _id: mongoose.Schema.Types.ObjectId
@@ -114,17 +114,23 @@ function newComment(req, res) {
     });
 }
 
-function changeLikes(req, res, change) {
+function changeLikes(req, res) {
     ThreadModel.findOne({ _id: req.body._id }, (err, thread)=>{
         if(err) {res.status(500).send();}
         else {
+        let likes = [];
             if(req.body.commentId) {
                 var index = thread.comments.map(function(e) { return e._id; }).indexOf(req.body.commentId);
-                thread.comments[index].likes+=change;
+                likes = thread.comments[index].likes;
             }
             else {
-                thread.likes+=change;
+        likes = thread.likes;
             }
+        if(likes.indexOf(req.username) === -1) {
+                    likes.push(req.username);
+        } else {
+            likes.splice(likes.indexOf(req.username), 1);
+        }
             ThreadModel.findOneAndUpdate({_id: req.body._id}, thread, (err) => {
                 if(err) res.status(500).send();
                 else res.status(200).send();
@@ -140,14 +146,6 @@ function getPosts(req, res) {
     })
 }
 
-function like(req, res) {
-    changeLikes(req, res, 1);
-}
-
-function unlike(req, res) {
-    changeLikes(req, res, -1);
-}
-
 const app = express();
 app.use(require('morgan')('combined'));
 app.use(require('express-session')({ secret: 'secret phrase', resave: false, saveUninitialized: false}));
@@ -159,8 +157,7 @@ app.use(express.static(path.join(__dirname, 'dist')));
 
 app.post('/register', registerUser);
 app.post('/login', passport.authenticate('ldapauth', { failureRedirect: '/login.html', session: true }), (req, res) => res.status(200).send('logged in'));
-app.post('/like', isAuthenticated, like);
-app.post('/unlike', isAuthenticated, unlike);
+app.post('/toggleLike', isAuthenticated, changeLikes);
 app.post('/newComment', isAuthenticated, newComment);
 app.post('/newPost', isAuthenticated, newPost);
 app.get('/posts', isAuthenticated, getPosts);
