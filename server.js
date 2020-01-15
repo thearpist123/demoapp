@@ -91,7 +91,7 @@ function registerUser(req, res) {
 function newPost(req, res) {
     new ThreadModel({
         content: req.body.content,
-        likes: 0,
+        likes: [],
         date: new Date(),
         poster: req.username,
         comments: []
@@ -105,7 +105,7 @@ function newComment(req, res) {
     ThreadModel.findOne({ _id: req.body._id }, (err, thread)=>{
         if(err) {res.status(500).send();}
         else {
-            thread.comments.push({ content: req.body.content, likes: 0, date: new Date(), poster: req.username, _id: new mongoose.Schema.Types.ObjectId()});
+            thread.comments.push({ content: req.body.content, likes: [], date: new Date(), poster: req.username, _id: new mongoose.Schema.Types.ObjectId()});
             ThreadModel.findOneAndUpdate({_id: req.body._id}, thread, (err) => {
                 if(err) res.status(500).send();
                 else res.status(200).send();

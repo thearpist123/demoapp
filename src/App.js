@@ -45,7 +45,7 @@ class App extends Component {
                 <div>{post.content}</div>
                 <div>{post.poster}</div>
                 <div>{`posted at: ${post.date}`}</div>
-                <div>{this.getLikeText(comment.likes)}</div>
+                <div>{this.getLikeText(post.likes)}</div>
                 <button onClick={()=>axios.post('/toggleLike', {_id: post._id})}>{'Like or Unlike'}</button>
                 <div>{'Comments'}</div>
                 {post.comments.map((comment)=>{
