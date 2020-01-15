@@ -93,7 +93,7 @@ function newPost(req, res) {
         content: req.body.content,
         likes: [],
         date: new Date(),
-        poster: req.username,
+        poster: req.user.username,
         comments: []
     }).save(err => {
       if(err) res.status(500).send("internal server error");
@@ -105,7 +105,7 @@ function newComment(req, res) {
     ThreadModel.findOne({ _id: req.body._id }, (err, thread)=>{
         if(err) {res.status(500).send();}
         else {
-            thread.comments.push({ content: req.body.content, likes: [], date: new Date(), poster: req.username, _id: new mongoose.Schema.Types.ObjectId()});
+            thread.comments.push({ content: req.body.content, likes: [], date: new Date(), poster: req.user.username, _id: new mongoose.Schema.Types.ObjectId()});
             ThreadModel.findOneAndUpdate({_id: req.body._id}, thread, (err) => {
                 if(err) res.status(500).send();
                 else res.status(200).send();
@@ -126,10 +126,10 @@ function changeLikes(req, res) {
             else {
         likes = thread.likes;
             }
-        if(likes.indexOf(req.username) === -1) {
-                    likes.push(req.username);
+        if(likes.indexOf(req.user.username) === -1) {
+                    likes.push(req.user.username);
         } else {
-            likes.splice(likes.indexOf(req.username), 1);
+            likes.splice(likes.indexOf(req.user.username), 1);
         }
             ThreadModel.findOneAndUpdate({_id: req.body._id}, thread, (err) => {
                 if(err) res.status(500).send();
